@@ -65,33 +65,28 @@ private:
     double F33(double t);
 };
 
-class HermitFunction
+class HermiteCurve
 {
 public:
-    HermitFunction() {};
+    HermiteCurve() {};
 
-    HermitFunction(const Eigen::MatrixXd& control_points, const Eigen::MatrixXd& tangents);
+    HermiteCurve(const std::vector<Eigen::Vector2d>& control_points, const std::vector<Eigen::Vector2d>& tangents, double segnum);
 
-    HermitFunction(Eigen::Vector2d b, Eigen::Vector2d p0, Eigen::Vector2d e, Eigen::Vector2d p1);
+    HermiteCurve(Eigen::Vector2d p0, Eigen::Vector2d p1, Eigen::Vector2d t0, Eigen::Vector2d t1, double segnum);
 
-    HermitFunction(Eigen::Vector2d b, Eigen::Vector2d e, double angleb, double anglee);
+    HermiteCurve(Eigen::Vector2d p0, Eigen::Vector2d p1, double angle1, double angle2, int segnum);
 
-    void HermitFunction2(Eigen::Vector2d b, Eigen::Vector2d e, double angleb, double anglee);
+    Eigen::Vector2d getPoint(double t);
 
-    void UsingpointWithtangent(Eigen::Vector2d b, Eigen::Vector2d p0, Eigen::Vector2d e, Eigen::Vector2d p1);
+    std::vector<Eigen::Vector2d> getPoints(int segnum);
 
-    Eigen::Vector2d getpoint(double t);
-
-    Eigen::Vector2d getderivation(double t);
-    Eigen::Vector2d GetPoint(double t);
-
-    std::vector<Eigen::Vector2d> getPointsvec(int Numpoints);
-
-    std::vector<Eigen::Vector2d> getPointsvec(std::vector<Eigen::Vector2d> points, std::vector<Eigen::Vector2d> tangents, int Numpoints);
+    Eigen::Vector2d getDerivation(double t);
 
     double distance(const Eigen::Vector2d& point);
+    
+public:
+     std::vector<Eigen::Vector2d> ctrP; // control points
+     std::vector<Eigen::Vector2d> ctrT; // tangents
+     std::vector<Eigen::Vector2d> curvePoints; // curvePoints
 
-private:
-    Eigen::MatrixXd m_P; // control points
-    Eigen::MatrixXd m_T; // tangents
 };

@@ -1170,163 +1170,89 @@ std::vector<Eigen::Vector2d> BSampleFunction::ThreeOrderBSplineInterpolatePt(std
     Num = Num + InsertNumSum;
 }
 
-HermitFunction::HermitFunction(const Eigen::MatrixXd& control_points, const Eigen::MatrixXd& tangents)
-    : m_P(control_points)
-    , m_T(tangents)
+HermiteCurve::HermiteCurve(const std::vector<Eigen::Vector2d>& control_points, const std::vector<Eigen::Vector2d>& tangents, double segnum)
+    : ctrP(control_points)
+    , ctrT(tangents)
 {
     assert(control_points.cols() == tangents.cols() && control_points.rows() == tangents.rows());
+    curvePoints = getPoints(segnum);
 }
 
-HermitFunction::HermitFunction(Eigen::Vector2d b, Eigen::Vector2d p0, Eigen::Vector2d e, Eigen::Vector2d p1)
+HermiteCurve::HermiteCurve(Eigen::Vector2d p0, Eigen::Vector2d p1, Eigen::Vector2d t0, Eigen::Vector2d t1, double segnum)
 {
-    Eigen::MatrixXd P(2, 2);
-    P << b.x(), e.x(), b.y(), e.y();
-    m_P = P;
-
-    Eigen::MatrixXd T(2, 2);
-    T << p0.x(), p1.x(), p0.y(), p1.y();
-    m_T = T;
+    ctrP.push_back(p0);
+    ctrP.push_back(p1);
+    ctrT.push_back(t0);
+    ctrT.push_back(t1);
+    curvePoints = getPoints(segnum);
 }
 
-HermitFunction::HermitFunction(Eigen::Vector2d b, Eigen::Vector2d e, double angleb, double anglee)
+HermiteCurve::HermiteCurve(Eigen::Vector2d p0, Eigen::Vector2d p1, double angle1, double angle2, int segnum)
 {
-    Eigen::MatrixXd P(2, 2);
-    P << b.x(), e.x(), b.y(), e.y();
-    m_P = P;
+    ctrP.push_back(p0);
+    ctrP.push_back(p1);
+    angle1 = angle1 / 180.0f * 3.1415926f;
+    angle1 = angle1 / 180.0f * 3.1415926f;
 
-    angleb = angleb / 180.0f * 3.1415926f;
-    anglee = anglee / 180.0f * 3.1415926f;
-    Eigen::Vector2d p0 = Eigen::Vector2d(std::cosf(angleb), std::sinf(angleb));
+    Eigen::Vector2d t0 = Eigen::Vector2d(std::cosf(angle1), std::sinf(angle1));
+    Eigen::Vector2d t1 = Eigen::Vector2d(std::cosf(angle2), std::sinf(angle2));
+    ctrT.push_back(t0);
+    ctrT.push_back(t1); 
+    curvePoints = getPoints(segnum);
 
-    Eigen::Vector2d p1 = Eigen::Vector2d(std::cosf(anglee), std::sinf(anglee));
-    Eigen::MatrixXd T(2, 2);
-    T << p0.x(), p1.x(), p0.y(), p1.y();
-    m_T = T;
 }
 
-void HermitFunction::HermitFunction2(Eigen::Vector2d b, Eigen::Vector2d e, double angleb, double anglee)
+Eigen::Vector2d HermiteCurve::getPoint(double t)
 {
-    Eigen::MatrixXd P(2, 2);
-    P << b.x(), e.x(), b.y(), e.y();
-    m_P = P;
+    double h00 = 2 * t * t * t - 3 * t * t + 1;
+    double h01 =  -2 * t * t * t + 3 * t * t;
+    double h10 = t * t * t - 2 * t * t + t;
+    double h11 = t * t * t - t * t;
 
-    angleb = angleb / 180.0f * 3.1415926f;
-    anglee = anglee / 180.0f * 3.1415926f;
-    Eigen::Vector2d p0 = Eigen::Vector2d(std::cosf(angleb), std::sinf(angleb));
-
-    Eigen::Vector2d p1 = Eigen::Vector2d(std::cosf(anglee), std::sinf(anglee));
-    Eigen::MatrixXd T(2, 2);
-    T << p0.x(), p1.x(), p0.y(), p1.y();
-    m_T = T;
-}
-
-void HermitFunction::UsingpointWithtangent(Eigen::Vector2d b,
-    Eigen::Vector2d p0,
-    Eigen::Vector2d e,
-    Eigen::Vector2d p1)
-{
-    Eigen::MatrixXd P(2, 2);
-    P << b.x(), e.x(), b.y(), e.y();
-    m_P = P;
-
-    Eigen::MatrixXd T(2, 2);
-    T << p0.x(), p1.x(), p0.y(), p1.y();
-    m_T = T;
-}
-
-Eigen::Vector2d HermitFunction::getpoint(double t)
-{
-    int n = m_P.cols();
-    int i = int(t * (n - 1));
-    t = t * (n - 1) - i;
-
-    Eigen::Vector2d point_on_curve = (2 * t * t * t - 3 * t * t + 1) * m_P.col(i)
-        + (t * t * t - 2 * t * t + t) * m_T.col(i)
-        + (-2 * t * t * t + 3 * t * t) * m_P.col(i + 1)
-        + (t * t * t - t * t) * m_T.col(i + 1);
+    Eigen::Vector2d point_on_curve = h00 * ctrP[0] + h01 * ctrP[1]
+        + h10 * ctrT[0]  + h11 * ctrT[1];
 
     return point_on_curve;
 }
 
-Eigen::Vector2d HermitFunction::getderivation(double t) 
+std::vector<Eigen::Vector2d> HermiteCurve::getPoints(int segnum)
 {
-    int n = m_P.cols();
-    int i = int(t * (n - 1));
-    t = t * (n - 1) - i;
-
-    Eigen::Vector2d pointder_on_curve = (6 * t * t - 6 * t) * m_P.col(i)
-        + (3 * t * t - 4 * t + 1) * m_T.col(i)
-        + (-6 * t * t + 6 * t) * m_P.col(i + 1)
-        + (3 * t * t - 2 * t) * m_T.col(i + 1);
-
-    Eigen::Vector2d dP = 3 * (1 - t) * (1 - t) * (m_P.col(i + 1) - m_P.col(i))
-        + 6 * (1 - t) * t * (m_T.col(i + 1) - m_T.col(i))
-        + 3 * t * t * (m_P.col(i + 1) - m_P.col(i));
-
-    return dP;
-}
-
-Eigen::Vector2d HermitFunction::GetPoint(double t) 
-{
-    Eigen::Vector2d P0_ = m_P.col(0);
-    Eigen::Vector2d P1_ = m_P.col(1);
-
-    Eigen::Vector2d T0_ = m_T.col(0);
-    Eigen::Vector2d T1_ = m_T.col(1);
-    double t2 = t * t;
-    double t3 = t2 * t;
-    double h1 = 2 * t3 - 3 * t2 + 1;
-    double h2 = -2 * t3 + 3 * t2;
-    double h3 = t3 - 2 * t2 + t;
-    double h4 = t3 - t2;
-    return h1 * P0_ + h2 * P1_ + h3 * T0_ + h4 * T1_;
-}
-
-std::vector<Eigen::Vector2d> HermitFunction::getPointsvec(int Numpoints) 
-{
-    double dert = 1.0f / (double)(Numpoints - 1);
     std::vector<Eigen::Vector2d> vec;
-    for (double t = 0; t <= 1; t += dert) {
-        Eigen::Vector2d point_on_curve = HermitFunction::getpoint(t);
-        vec.push_back(point_on_curve);
-    }
-    return vec;
-}
-
-std::vector<Eigen::Vector2d> HermitFunction::getPointsvec(std::vector<Eigen::Vector2d> points,
-    std::vector<Eigen::Vector2d> tangents,
-    int Numpoints)
-{
-    double dert = 1.0f / (double)(Numpoints);
-    std::vector<Eigen::Vector2d> vec;
-    for (int i = 0; i < points.size() - 1; i++) {
-        if (i % 2 == 0)
-            UsingpointWithtangent(points[i], tangents[i], points[i + 1], tangents[i + 1]);
-        else
-            UsingpointWithtangent(points[i], tangents[i], points[i + 1], tangents[i + 1]);
-
-        for (double t = 0; t <= 1; t += dert) {
-            Eigen::Vector2d point_on_curve = HermitFunction::getpoint(t);
-            vec.push_back(point_on_curve);
-        }
+    for (int i = 0; i <= segnum; ++i) {
+        double t = i / double(segnum);
+        Vector2d pt = getPoint(t);
+        vec.push_back(pt);
     }
 
     return vec;
 }
 
-double HermitFunction::distance(const Eigen::Vector2d& point) 
+Eigen::Vector2d HermiteCurve::getDerivation(double t)
 {
-    Eigen::Vector2d P0_ = m_P.col(0);
-    Eigen::Vector2d P1_ = m_P.col(1);
+    double h1_der = 6 * t * t - 6 * t;
+    double h2_der = -6 * t * t + 6 * t;
+    double h3_der = 3 * t * t - 4 * t + 1;
+    double h4_der = 3 * t * t - 2 * t;
 
-    Eigen::Vector2d T0_ = m_T.col(0);
-    Eigen::Vector2d T1_ = m_T.col(1);
+    // 曲线导数（向量）
+    Eigen::Vector2d dH = h1_der * ctrP[0] + h2_der * ctrP[1] + h3_der * ctrT[0] + h4_der * ctrT[1];
+    return dH;
+
+}
+
+double HermiteCurve::distance(const Eigen::Vector2d& point) //点到曲线的距离
+{
+    Eigen::Vector2d P0_ = ctrP[0];
+    Eigen::Vector2d P1_ = ctrP[1];
+
+    Eigen::Vector2d T0_ = ctrT[0];
+    Eigen::Vector2d T1_ = ctrT[1];
 
     double epsilon = 1e-4;
     double t0 = 0;
     double t1 = 1;
     double t = 0.5;
-    Eigen::Vector2d P = GetPoint(t);
+    Eigen::Vector2d P = getPoint(t);
     Eigen::Vector2d dP = 3 * (1 - t) * (1 - t) * (P1_ - P0_) + 6 * (1 - t) * t * (T1_ - T0_)
         + 3 * t * t * (P1_ - P0_);
     Eigen::Vector2d v = point - P;
@@ -1347,7 +1273,7 @@ double HermitFunction::distance(const Eigen::Vector2d& point)
         else {
             t = (t2 + t3) / 2;
         }
-        P = GetPoint(t);
+        P = getPoint(t);
         dP = 3 * (1 - t) * (1 - t) * (P1_ - P0_) + 6 * (1 - t) * t * (T1_ - T0_)
             + 3 * t * t * (P1_ - P0_);
         v = point - P;
