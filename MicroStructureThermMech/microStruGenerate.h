@@ -46,15 +46,15 @@ namespace msGen {
 		{
 			if (type == 0)
 			{
-				if (tangle < 0 && tangle >360)
-					std::cout << "Input type error: It should be a DEGREE!" << std::endl;
+				//if (tangle < 0 && tangle >360)
+					//std::cout << "Input type error: It should be a DEGREE!" << std::endl;
 				double tranS = 1.0f / 180.0f * std::acos(-1);
 				tangent = Eigen::Vector2d(std::cosf(tangle * tranS), std::sinf(tangle * tranS)) * ratio;
 			}
 			else
 			{
-				if (tangle < 0 && tangle >2 * std::cos(-1))
-					std::cout << "Input type error: It should be a RADIAN!" << std::endl;
+				//if (tangle < 0 && tangle >2 * std::cos(-1))
+					//std::cout << "Input type error: It should be a RADIAN!" << std::endl;
 				tangent = Eigen::Vector2d(std::cosf(tangle), std::sinf(tangle)) * ratio;
 			}
 		}
@@ -70,23 +70,23 @@ namespace msGen {
 	};
 
 
-    // 结构体：边的信息
-    struct Edge {
-        std::vector<Eigen::Vector2d> points;  // 当前边上的点序列
-        ConnectionType connectionType;        // 连接类型
-    };
+ //   // 结构体：边的信息
+ //   struct Edge {
+ //       std::vector<Eigen::Vector2d> points;  // 当前边上的点序列
+ //       ConnectionType connectionType;        // 连接类型
+ //   };
 
 
-    std::vector<std::vector<int>> generateMicrostructure(
-        int leftPointCount,
-        int topPointCount,
-        const std::vector<double>& leftPositions,
-        const std::vector<double>& topPositions,
-        double connectionWidthLeft,
-        double connectionWidthTop,
-        int connectionModeLeft,
-        int connectionModeTop
-    );
+ //   std::vector<std::vector<int>> generateMicrostructure(
+ //       int leftPointCount,
+ //       int topPointCount,
+ //       const std::vector<double>& leftPositions,
+ //       const std::vector<double>& topPositions,
+ //       double connectionWidthLeft,
+ //       double connectionWidthTop,
+ //       int connectionModeLeft,
+ //       int connectionModeTop
+ //   );
 
 } // namespace msGen
 
