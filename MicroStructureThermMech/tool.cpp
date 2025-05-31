@@ -1283,3 +1283,12 @@ double HermiteCurve::distance(const Eigen::Vector2d& point) //点到曲线的距
 }
 
 
+
+//-----------------------visual tool---------------------------------------------
+cv::Point2i worldToImage(const Vector2d& pt, int imgSize, double scale, int offset) {
+    int x = static_cast<int>(pt.x() * scale) + offset;
+    int y = imgSize - (static_cast<int>(pt.y() * scale) + offset); // Flip Y
+    return cv::Point(x, y);
+}
+
+

@@ -51,7 +51,7 @@ MatrixXi image2matrix(string filename);
 
 void showSparseMatrix(SparseMatrix<double> X);
 
-//math tools
+//------------------------------math tools-------------------------------------------
 class BSampleFunction
 {
 public:
@@ -90,3 +90,7 @@ public:
      std::vector<Eigen::Vector2d> curvePoints; // curvePoints
 
 };
+
+
+//--------------------------------- visual tool----------------------------------------------
+cv::Point2i worldToImage(const Vector2d& pt, int imgSize, double scale, int offset);

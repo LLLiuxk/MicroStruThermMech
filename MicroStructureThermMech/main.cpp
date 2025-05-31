@@ -8,11 +8,7 @@
 #include "propertyCalculate.h"
 #include "Visualization.h"
 
-cv::Point2i worldToImage(const Vector2d& pt, int imgSize, double scale, int offset) {
-    int x = static_cast<int>(pt.x() * scale) + offset;
-    int y = imgSize - (static_cast<int>(pt.y() * scale) + offset); // Flip Y
-    return cv::Point(x, y);
-}
+
 
 int main()
 {
@@ -80,7 +76,7 @@ int main()
     cv::arrowedLine(img, p0, worldToImage(cp[0] + 0.3 * ct[0], imgSize, scale, offset), cv::Scalar(255, 0, 0), 2);
     cv::arrowedLine(img, p1, worldToImage(cp[1] + 0.3 * ct[1], imgSize, scale, offset), cv::Scalar(255, 0, 0), 2);
 
-    // Show
+    // Show 
     cv::imshow("Hermite Curve", img);
    
     cv::waitKey(0);
