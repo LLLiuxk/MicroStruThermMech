@@ -75,39 +75,49 @@ namespace msGen {
 
     class QuarterCell {
     public:
+
         enum Edge { TOP = 0, RIGHT, BOTTOM, LEFT };
         struct Connection {
             int pointId1;
             int pointId2;
-            std::string type; // 线的类型，比如 "solid", "dashed", "curve"
+            ConnectionType type; // 连线的类型
             double width;     // 线宽
 
-            Connection(int p1, int p2, const std::string& t, double w)
+            Connection(int p1, int p2, ConnectionType t, double w)
                 : pointId1(p1), pointId2(p2), type(t), width(w) {}
         };
 
     private:
-        std::map<Edge, std::vector<PointTang>> edgePoints; // 每条边上的点
+        std::vector<int> edgePointsNums;
+        std::vector<std::vector<PointTang>> edgePoints; // 每条边上的点
+        std::vector<PointTang > AllPoints; // 边界上的所有点
         std::vector<Connection> connections;               // 点之间的连接
         int pointCounter = 0;                              // 点编号计数器
 
     public:
-        // 设置某条边上的点（线性分布）
-        void generateEdgePoints(Edge edge, int numPoints) {
-            edgePoints[edge].clear();
-            double step = 1.0 / (numPoints - 1);
 
-            for (int i = 0; i < numPoints; ++i) {
-                double x = 0.0, y = 0.0;
-                switch (edge) {
-                case TOP:    x = i * step; y = 1.0; break;
-                case RIGHT:  x = 1.0; y = 1.0 - i * step; break;
-                case BOTTOM: x = 1.0 - i * step; y = 0.0; break;
-                case LEFT:   x = 0.0; y = i * step; break;
+        QuarterCell() {};
+
+        QuarterCell(std::vector<std::vector<PointTang>> edgePoints, std::vector<Connection> connections) {
+            edgePoints = edgePoints;
+            connections = connections;
+            for (int i = 0; i < 4; i++)
+            {
+                int pCounter = 0;
+                for (int j = 0; j < edgePoints[i].size(); j++)
+                {
+                    pCounter++;
+                    AllPoints.push_back(edgePoints[i][j]);
                 }
-                edgePoints[edge].emplace_back(x, y, pointCounter++);
+                edgePointsNums.push_back(pCounter);
+                pointCounter += pCounter;
             }
+               
+
+        
         }
+
+
 
         // 获取某条边的点
         const std::vector<PointTang>& getEdgePoints(Edge edge) const {
