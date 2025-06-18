@@ -73,10 +73,10 @@ namespace msGen {
  //   边的信息只保存一个vector，里面是边上点的序列
  
 
-    class QuarterCell {
+    class QuarterCell {   //左下四分之一单元
     public:
 
-        enum Edge { TOP = 0, RIGHT, BOTTOM, LEFT };
+        enum Edge { LEFT =0, TOP, RIGHT, BOTTOM  };
         struct Connection {
             int pointId1;
             int pointId2;
@@ -88,8 +88,10 @@ namespace msGen {
         };
 
     private:
+        std::vector<std::vector<double>> edgePointsRatios; // 每条边上的点的位置比例
+        std::vector<Eigen::Vector2d> fout_corners = { {0.0,0.0}, {0.0, 1.0}, {1.0,1.0}, {1.0, 0.0} }; // 固定初始化值
         std::vector<int> edgePointsNums;
-        std::vector<std::vector<PointTang>> edgePoints; // 每条边上的点
+        std::vector<std::vector<PointTang>> edgePoints; // 每条边上的点，分别是左，上，右，下
         std::vector<PointTang > AllPoints; // 边界上的所有点
         std::vector<Connection> connections;               // 点之间的连接
         int pointCounter = 0;                              // 点编号计数器
@@ -98,9 +100,8 @@ namespace msGen {
 
         QuarterCell() {};
 
-        QuarterCell(std::vector<std::vector<PointTang>> edgePoints, std::vector<Connection> connections) {
-            edgePoints = edgePoints;
-            connections = connections;
+        QuarterCell(std::vector<std::vector<PointTang>> edgePoints_, std::vector<Connection> connections_):edgePoints(std::move(edgePoints_)), connections(std::move(connections_))
+        {
             for (int i = 0; i < 4; i++)
             {
                 int pCounter = 0;
@@ -111,12 +112,30 @@ namespace msGen {
                 }
                 edgePointsNums.push_back(pCounter);
                 pointCounter += pCounter;
-            }
-               
-
-        
+            }       
         }
 
+        QuarterCell(std::vector<std::vector<double>> edgePointsRatios_, std::vector<std::vector<Eigen::Vector2d>> Tangents, std::vector<Connection> connections_):connections(std::move(connections_))
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                int pCounter = 0;
+                std::vector<PointTang> edges_p;
+                for (int j = 0; j < edgePointsRatios_[i].size(); j++)
+                {
+                    double ratio_ = edgePointsRatios_[i][j];
+                    Eigen::Vector2d point_ = ratio_ * (fout_corners[(i + 1) % 4] - fout_corners[i]);
+                    Eigen::Vector2d tangent_ = Tangents[i][j];
+                    PointTang pt(point_, tangent_);
+                    pCounter++;
+                    AllPoints.push_back(pt);
+                    edges_p.push_back(pt);
+                }
+                edgePointsNums.push_back(pCounter);
+                edgePoints.push_back(edges_p);
+                pointCounter += pCounter;
+            }
+        }
 
 
         // 获取某条边的点
@@ -135,12 +154,14 @@ namespace msGen {
         }
 
         // 获取所有点
-        std::vector<PointTang> getAllPoints() const {
-            std::vector<PointTang> all;
-            for (const auto& [edge, pts] : edgePoints) {
-                all.insert(all.end(), pts.begin(), pts.end());
-            }
-            return all;
+        const std::vector<PointTang>& getAllPoints() const {
+            return AllPoints;
+        }
+
+        //根据信息构建cell的完整像素图信息
+        void createCell()
+        {
+
         }
 
         // 显示信息（调试用）
@@ -156,22 +177,6 @@ namespace msGen {
             }
         }
     };
- //   struct Edge {
- //       std::vector<Eigen::Vector2d> points;  // 当前边上的点序列
- //       ConnectionType connectionType;        // 连接类型
- //   };
-
-
- //   std::vector<std::vector<int>> generateMicrostructure(
- //       int leftPointCount,
- //       int topPointCount,
- //       const std::vector<double>& leftPositions,
- //       const std::vector<double>& topPositions,
- //       double connectionWidthLeft,
- //       double connectionWidthTop,
- //       int connectionModeLeft,
- //       int connectionModeTop
- //   );
 
 } // namespace msGen
 

@@ -40,46 +40,49 @@ int main()
 
 
     // Define points and tangents
-    vector<Vector2d> cp{ {0.0, 0.0}, {1.0, 1.0} };
-    vector<Vector2d> ct{ {1.0, 0.0}, {0.0, 1.0} };
-    // Sampling
-    vector<Vector2d> curvePoints;
-    const int numSamples = 100;
-    HermiteCurve curve(cp,ct, numSamples);
-    curvePoints = curve.curvePoints;
-    
-    // Visualization parameters
-    const int imgSize = 500;
-    const double scale = 200.0; // scale world to image
-    const int offset = 50;
+    //vector<Vector2d> cp{ {0.0, 0.0}, {1.0, 1.0} };
+    //vector<Vector2d> ct{ {1.0, 0.0}, {0.0, 1.0} };
+    //// Sampling
+    //vector<Vector2d> curvePoints;
+    //const int numSamples = 100;
+    //HermiteCurve curve(cp,ct, numSamples);
+    //curvePoints = curve.curvePoints;
+    //
+    //// Visualization parameters
+    //const int imgSize = 500;
+    //const double scale = 200.0; // scale world to image
+    //const int offset = 50;
 
-    // Create blank image
-    cv::Mat img(imgSize, imgSize, CV_8UC3, cv::Scalar(255, 255, 255));
+    //// Create blank image
+    //cv::Mat img(imgSize, imgSize, CV_8UC3, cv::Scalar(255, 255, 255));
 
-    // Draw curve
-    for (size_t i = 1; i < curvePoints.size(); ++i) {
-        cv::line(
-            img,
-            worldToImage(curvePoints[i - 1], imgSize, scale, offset),
-            worldToImage(curvePoints[i], imgSize, scale, offset),
-            cv::Scalar(0, 0, 255), 2
-        );
-    }
+    //// Draw curve
+    //for (size_t i = 1; i < curvePoints.size(); ++i) {
+    //    cv::line(
+    //        img,
+    //        worldToImage(curvePoints[i - 1], imgSize, scale, offset),
+    //        worldToImage(curvePoints[i], imgSize, scale, offset),
+    //        cv::Scalar(0, 0, 255), 2
+    //    );
+    //}
 
-    // Draw points and tangents
-    cv::Point p0 = worldToImage(cp[0], imgSize, scale, offset);
-    cv::Point p1 = worldToImage(cp[1], imgSize, scale, offset);
-    cv::circle(img, p0, 5, cv::Scalar(0, 255, 0), -1);
-    cv::circle(img, p1, 5, cv::Scalar(0, 255, 0), -1);
+    //// Draw points and tangents
+    //cv::Point p0 = worldToImage(cp[0], imgSize, scale, offset);
+    //cv::Point p1 = worldToImage(cp[1], imgSize, scale, offset);
+    //cv::circle(img, p0, 5, cv::Scalar(0, 255, 0), -1);
+    //cv::circle(img, p1, 5, cv::Scalar(0, 255, 0), -1);
 
-    // Draw tangent vectors
-    cv::arrowedLine(img, p0, worldToImage(cp[0] + 0.3 * ct[0], imgSize, scale, offset), cv::Scalar(255, 0, 0), 2);
-    cv::arrowedLine(img, p1, worldToImage(cp[1] + 0.3 * ct[1], imgSize, scale, offset), cv::Scalar(255, 0, 0), 2);
+    //// Draw tangent vectors
+    //cv::arrowedLine(img, p0, worldToImage(cp[0] + 0.3 * ct[0], imgSize, scale, offset), cv::Scalar(255, 0, 0), 2);
+    //cv::arrowedLine(img, p1, worldToImage(cp[1] + 0.3 * ct[1], imgSize, scale, offset), cv::Scalar(255, 0, 0), 2);
 
-    // Show 
-    cv::imshow("Hermite Curve", img);
+    //// Show 
+    //cv::imshow("Hermite Curve", img);
    
-    cv::waitKey(0);
+    //cv::waitKey(0);
+
+    //test
+
     return 0;
 }
 
