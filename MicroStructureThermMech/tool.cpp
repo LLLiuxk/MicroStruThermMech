@@ -1291,4 +1291,86 @@ cv::Point2i worldToImage(const Vector2d& pt, int imgSize, double scale, int offs
     return cv::Point(x, y);
 }
 
+void draw_poly(Mat& drawing_, vector<Point2f> contour_s, Point2f shift, Scalar color)
+{
+    Scalar col_sca = color;
+    int n = contour_s.size();
+    //cout << "n: " << n << endl;
+    Point rook_points[1][1000];
+    for (int t = 0; t < n; t++)
+    {
+        rook_points[0][t] = contour_s[t] + shift;
+    }
+    const Point* ppt[1] = { rook_points[0] };
+    int npt[] = { n };
+    fillPoly(drawing_,
+        ppt,
+        npt,
+        1,
+        col_sca //黑色
+                //Scalar(255, 255, 255) //白色
+    );
+}
+
+
+void draw_contour(Mat& drawing_, vector<Point2f> contour_s, Point2f shift, Scalar color, int type, int thickness)
+{
+    Scalar col_sca = color;
+    int n = contour_s.size();
+    if (type == 0) //line contour
+    {
+        for (int t = 0; t < n; t++)
+        {
+            int lineType = 8;
+            line(drawing_, contour_s[t] + shift, contour_s[(t + 1) % n] + shift,  col_sca, thickness, lineType);
+        }
+    }
+    else  //circle contour
+        for (int t = 0; t < n; t++)
+            circle(drawing_, contour_s[t] + shift, thickness, col_sca, -1);
+
+    //cout << "n: " << n << endl;
+}
+
+void draw_lines(Mat& drawing_, vector<Point2f> lines, Point2f shift, Scalar color, int type, int thickness)
+{
+    Scalar col_sca = color;
+    int n = lines.size();
+    if (type == 0) //line contour
+    {
+        for (int t = 0; t < n - 1; t++)
+        {
+            int lineType = 8;
+            line(drawing_, lines[t] + shift, lines[t + 1] + shift, col_sca, thickness, lineType);
+        }
+    }
+    else  //circle contour
+        for (int t = 0; t < n; t++)
+            circle(drawing_, lines[t] + shift, thickness, col_sca, -1);
+
+    //cout << "n: " << n << endl;
+}
+
+
+
+//data transfer
+vector<Point2f> eigen2cv(vector<Vector2d> points)
+{
+    vector<Point2f> points_;
+    for (const auto& point : points) {
+        points_.push_back(Point2f(point.x(), point.y()));
+    }
+    return points_;
+}
+
+vector<Vector2d> cv2eigen(vector<Point2f> points)
+{
+    vector<Vector2d> points_;
+    for (const auto& point : points) {
+        points_.push_back(Vector2d(point.x, point.y));
+    }
+    return points_;
+}
+
+
 

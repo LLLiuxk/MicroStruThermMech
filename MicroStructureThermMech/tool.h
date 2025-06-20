@@ -94,3 +94,13 @@ public:
 
 //--------------------------------- visual tool----------------------------------------------
 cv::Point2i worldToImage(const Vector2d& pt, int imgSize, double scale, int offset);
+
+void draw_poly(Mat& drawing_, vector<Point2f> contour_s, Point2f shift, Scalar color = Scalar(0, 0, 0));
+void draw_contour(Mat& drawing_, vector<Point2f> contour_s, Point2f shift, Scalar color = Scalar(0,0,0), int type = 0, int thickness = 1);
+void draw_lines(Mat& drawing_, vector<Point2f> contour_s, Point2f shift, Scalar color = Scalar(0, 0, 0), int type = 0, int thickness = 1);
+
+
+//data transfer
+vector<Point2f> eigen2cv(vector<Vector2d> points);
+
+vector<Vector2d> cv2eigen(vector<Point2f> points);

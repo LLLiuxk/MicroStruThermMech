@@ -144,7 +144,7 @@ namespace msGen {
         }
 
         // 添加连接（点ID之间）
-        void addConnection(int id1, int id2, const std::string& type, double width) {
+        void addConnection(int id1, int id2, const ConnectionType type, double width) {
             connections.emplace_back(id1, id2, type, width);
         }
 
@@ -165,17 +165,7 @@ namespace msGen {
         }
 
         // 显示信息（调试用）
-        void printSummary() const {
-            std::cout << "Quarter Cell Summary:\n";
-            for (const auto& [edge, pts] : edgePoints) {
-                std::cout << "Edge " << edge << ": " << pts.size() << " points\n";
-            }
-            std::cout << "Total Connections: " << connections.size() << "\n";
-            for (const auto& conn : connections) {
-                std::cout << "Connect " << conn.pointId1 << " -> " << conn.pointId2
-                    << ", Type: " << conn.type << ", Width: " << conn.width << "\n";
-            }
-        }
+       
     };
 
 } // namespace msGen
