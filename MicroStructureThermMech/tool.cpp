@@ -1101,7 +1101,7 @@ void showSparseMatrix(SparseMatrix<double> X)
 }
 
 
-//math tools
+//---------------------------------------math tools-------------------------------------------------
 double BSampleFunction::F03(double t)
 {
     return 1.0 / 6 * (-t * t * t + 3 * t * t - 3 * t + 1);
@@ -1282,7 +1282,95 @@ double HermiteCurve::distance(const Eigen::Vector2d& point) //点到曲线的距
     return dist;
 }
 
+// 归一化向量（单位向量）
+Vector2d normVector(const Vector2d& v) {
+    double length = std::sqrt(v.x() * v.x() + v.y() * v.y());
+    if (length < 1e-10) return { 0, 0 }; // 避免除以零
+    return { v.x() / length, v.y() / length };
+}
 
+// 计算点的偏移点
+Vector2d offsetPoint(const Vector2d& p, const Vector2d& dir, double distance) {
+    Vector2d off_P(p.x() + dir.x() * distance, p.y() + dir.y() * distance);
+    return off_P;
+}
+
+std::vector<Vector2d> expandLineToWidth(const std::vector<Vector2d>& line, double width)
+{
+    if (line.size() < 2) {
+        // 线段至少需要2个点
+        return { {}, {} };
+    }
+
+    std::vector<Vector2d> upperBoundary;
+    std::vector<Vector2d> lowerBoundary;
+    const double halfWidth = width / 2.0;
+
+    // 处理第一个点
+    Vector2d firp = line[1] - line[0];
+    Vector2d firstDir(firp.y(), -firp.x());
+    Vector2d firstUnitDir = normVector(firstDir);
+    upperBoundary.push_back(offsetPoint(line[0], firstUnitDir, halfWidth));
+    lowerBoundary.push_back(offsetPoint(line[0], firstUnitDir, -halfWidth));
+
+    // 处理中间点
+    for (size_t i = 1; i < line.size() - 1; i++) {
+        Vector2d prevDir = line[i] - line[i - 1];
+        Vector2d nextDir = line[i + 1] - line[i];
+
+        // 计算两个相邻线段的平均方向
+        Vector2d avgDir(prevDir.x() + nextDir.x(), prevDir.y() + nextDir.y());
+
+        // 计算垂直方向并归一化
+        Vector2d perp(avgDir.y(), -avgDir.x());
+        Vector2d unitPerp = normVector(perp);
+
+        // 计算偏移点
+        upperBoundary.push_back(offsetPoint(line[i], unitPerp, halfWidth));
+        lowerBoundary.push_back(offsetPoint(line[i], unitPerp, -halfWidth));
+    }
+
+    // 处理最后一个点
+    Vector2d lastp = line[line.size() - 1] - line[line.size() - 2];
+    Vector2d lastDir(lastp.y(), -lastp.x());
+    Vector2d lastUnitDir = normVector(lastDir);
+    upperBoundary.push_back(offsetPoint(line.back(), lastUnitDir, halfWidth));
+    lowerBoundary.push_back(offsetPoint(line.back(), lastUnitDir, -halfWidth));
+    std::vector<Vector2d> poly = combineVectors_reverse(upperBoundary, lowerBoundary);
+    return poly;
+}
+
+std::vector<Vector2d> expandLineRadial(const std::vector<Vector2d>& line, Vector2d ray_center, double width) 
+{
+    if (line.size() < 2) {
+        // 线段至少需要2个点
+        return { {}, {} };
+    }
+
+    std::vector<Vector2d> upperBoundary;
+    std::vector<Vector2d> lowerBoundary;
+    const double halfWidth = width / 2.0;
+
+    // 直接处理所有点
+    for (size_t i = 0; i < line.size(); i++) {
+        Vector2d dir = line[i] - ray_center;
+
+        Vector2d unitDir = normVector(dir);
+        // 计算偏移点
+        upperBoundary.push_back(offsetPoint(line[i], unitDir, halfWidth));
+        lowerBoundary.push_back(offsetPoint(line[i], unitDir, -halfWidth));
+    }
+    std::vector<Vector2d> poly = combineVectors_reverse(upperBoundary, lowerBoundary);
+    return poly;
+}
+
+std::vector<Vector2d> combineVectors_reverse(std::vector<Vector2d>& line1,  std::vector<Vector2d>& line2) 
+{
+    std::vector<Vector2d> combined = std::move(line1);
+    combined.insert(combined.end(), line2.rbegin(), line2.rend());
+
+    return combined;
+}
 
 //-----------------------visual tool---------------------------------------------
 cv::Point2i worldToImage(const Vector2d& pt, int imgSize, double scale, int offset) {

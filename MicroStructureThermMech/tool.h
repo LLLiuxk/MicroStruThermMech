@@ -91,6 +91,15 @@ public:
 
 };
 
+// 归一化向量（单位向量）
+Vector2d normVector(const Vector2d& v);
+// 计算点的偏移点
+Vector2d offsetPoint(const Vector2d& p, const Vector2d& dir, double distance);
+
+std::vector<Vector2d>expandLineToWidth(const std::vector<Vector2d>& line, double width);
+
+std::vector<Vector2d> expandLineRadial(const std::vector<Vector2d>& line, Vector2d ray_center, double width);
+std::vector<Vector2d> combineVectors_reverse(std::vector<Vector2d>& line1, std::vector<Vector2d>& line2);
 
 //--------------------------------- visual tool----------------------------------------------
 cv::Point2i worldToImage(const Vector2d& pt, int imgSize, double scale, int offset);

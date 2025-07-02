@@ -8,96 +8,74 @@
 #include "propertyCalculate.h"
 #include "Visualization.h"
 
-// 归一化向量（单位向量）
-Vector2d normVector(const Vector2d& v) {
-    double length = std::sqrt(v.x() * v.x() + v.y() * v.y());
-    if (length < 1e-10) return { 0, 0 }; // 避免除以零
-    return { v.x() / length, v.y() / length };
-}
-
-// 计算点的偏移点
-Vector2d offsetPoint(const Vector2d& p, const Vector2d& dir, double distance) {
-    Vector2d off_P(p.x() + dir.x() * distance, p.y() + dir.y() * distance);
-    return off_P;
-}
-
-std::pair<std::vector<Vector2d>, std::vector<Vector2d>> expandLineToWidth(
-    const std::vector<Vector2d>& line, double width) {
-
-    if (line.size() < 2) {
-        // 线段至少需要2个点
-        return { {}, {} };
-    }
-
-    std::vector<Vector2d> upperBoundary;
-    std::vector<Vector2d> lowerBoundary;
-    const double halfWidth = width / 2.0;
-
-    // 处理第一个点
-    Vector2d firp = line[1] - line[0];
-    Vector2d firstDir(firp.y(), -firp.x());
-    Vector2d firstUnitDir = normVector(firstDir);
-    upperBoundary.push_back(offsetPoint(line[0], firstUnitDir, halfWidth));
-    lowerBoundary.push_back(offsetPoint(line[0], firstUnitDir, -halfWidth));
-
-    // 处理中间点
-    for (size_t i = 1; i < line.size() - 1; i++) {
-        Vector2d prevDir = line[i] - line[i - 1];
-        Vector2d nextDir = line[i + 1] - line[i];
-
-        // 计算两个相邻线段的平均方向
-        Vector2d avgDir(prevDir.x() + nextDir.x(), prevDir.y() + nextDir.y());
-
-        // 计算垂直方向并归一化
-        Vector2d perp(avgDir.y(), -avgDir.x());
-        Vector2d unitPerp = normVector(perp);
-
-        // 计算偏移点
-        upperBoundary.push_back(offsetPoint(line[i], unitPerp, halfWidth));
-        lowerBoundary.push_back(offsetPoint(line[i], unitPerp, -halfWidth));
-    }
-
-    // 处理最后一个点
-    Vector2d lastp = line[line.size() - 1] - line[line.size() - 2];
-    Vector2d lastDir(lastp.y(), -lastp.x());
-    Vector2d lastUnitDir = normVector(lastDir);
-    upperBoundary.push_back(offsetPoint(line.back(), lastUnitDir, halfWidth));
-    lowerBoundary.push_back(offsetPoint(line.back(), lastUnitDir, -halfWidth));
-
-    return { upperBoundary, lowerBoundary };
-}
+using namespace msGen;
 
 int main()
 {
     // 设置精度和科学计数法显示
     std::cout << std::fixed << std::setprecision(6);  // 固定小数，保留 4 位
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
+    cv::Mat image(800, 800, CV_8UC3, cv::Scalar(255, 255, 255));
+
+    std::vector<PointTang> allPoints_ = {
+    PointTang(Vector2d(0,100), Vector2d(-100,100)),
+    PointTang(Vector2d(100,200), Vector2d(100,250)),
+    PointTang(Vector2d(200,100), Vector2d(250,100)),
+    PointTang(Vector2d(100,0), Vector2d(100,-50))
+    };
+    std::vector<Connection> connections_ = {
+    Connection(0,1,1,MODE_HERMITE,20),
+    Connection(1,2,2,MODE_LINEAR,20),
+    Connection(2,3,3,MODE_LINEAR,20),
+    Connection(3,0,0,MODE_LINEAR,20)
+    };
+
+    HermiteCurve heline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
+    for(auto p: heline1.curvePoints)
+        cout << p << endl;
+    draw_lines(image, eigen2cv(heline1.curvePoints), Point2f(100,100), Scalar(100,0,0),1);
+    /*QuarterCell cell1(allPoints_, connections_);
+    cell1.createCell();
+    cell1.drawCell();*/
+
+
+
 
     // 示例：x轴上的直线 (y=0)
-    std::vector<Vector2d> line = { {0, 0}, {20,0}, { 50, 0 }, {100, 0} };
-    double width = 20.0; // 宽度
+   // std::vector<Vector2d> line = { {0, 0}, {20,0}, { 50, 0 }, {100, 0} };
+   // double width = 50.0; // 宽度
 
-   /* std::pair<std::vector<Vector2d>, std::vector<Vector2d>> two_v*/auto two_v = expandLineToWidth(line, width);
+   // 
+   // Point2f center(400, 300);
+   // vector<Point2f> CIR;
+   // for (int i = 0; i < 10; ++i) {
+   //     double angle = static_cast<double>(i) * CV_PI / 10;
+   //     float x = center.x + 20 * cos(angle);
+   //     float y = center.y + 20 * sin(angle);
+   //     CIR.push_back(Point2f(x, y));
+   // }
 
-    // 打印结果
-   std::vector<Vector2d>& upper = two_v.first;
-   std::vector<Vector2d>& lower = two_v.second;
+   ///* std::pair<std::vector<Vector2d>, std::vector<Vector2d>> two_v*///auto two_v = expandLineToWidth(cv2eigen(CIR), width);
+   // Vector2d cen(center.x, center.y);
+   // auto two_v = expandLineRadial(cv2eigen(CIR), Vector2d(300,100), width);
 
-    std::cout << "Upper Boundary:\n";
-    for (const auto& p : upper) {
-        std::cout << "(" << p.x() << ", " << p.y() << ")\n";
-    }
+   // // 打印结果
+   ////std::vector<Vector2d>& upper = two_v.first;
+   ////std::vector<Vector2d>& lower = two_v.second;
 
-    std::cout << "\nLower Boundary:\n";
-    for (const auto& p : lower) {
-        std::cout << "(" << p.x() << ", " << p.y() << ")\n";
-    }
+   // std::cout << "Upper Boundary:\n";
+   // for (const auto& p : two_v) {
+   //     std::cout << "(" << p.x() << ", " << p.y() << ")\n";
+   // }
 
-    cv::Mat image(300, 300, CV_8UC3, cv::Scalar(255, 255, 255));
+   // /*std::cout << "\nLower Boundary:\n";
+   // for (const auto& p : lower) {
+   //     std::cout << "(" << p.x() << ", " << p.y() << ")\n";
+   // }*/
 
-    draw_lines(image, eigen2cv(upper), Point2f(50,50),  Scalar(50, 128, 200),  0, 1);
-    draw_lines(image, eigen2cv(line), Point2f(50, 50), Scalar(0, 0, 0), 0, 1);
-    draw_lines(image, eigen2cv(lower), Point2f(50, 50), Scalar(128, 0, 1000), 0, 1);
+   // draw_poly(image, eigen2cv(two_v), Point2f(50,50),  Scalar(0, 128, 200));
+   // draw_lines(image, CIR, Point2f(50, 50), Scalar(0, 0, 0), 0, 1);
+    //draw_lines(image, eigen2cv(lower), Point2f(50, 50), Scalar(128, 0, 1000), 0, 1);
 
     cv::imshow("Expanded Line with Width", image);
     cv::waitKey(0);
