@@ -31,9 +31,17 @@ int main()
     };
 
     HermiteCurve heline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
-    for(auto p: heline1.curvePoints)
+    vector<Vector2d> ctpoints = { Vector2d(0, 100), Vector2d(100, 100), Vector2d(100, 200) };
+    BSampleFunction bline1;
+    vector<Vector2d> curvepoints = bline1.ThreeOrderBSplineInterpolatePt(ctpoints, 10);
+    for (auto p : curvepoints)
         cout << p << endl;
+
+    /*for(auto p: heline1.curvePoints)
+        cout << p << endl;*/
     draw_lines(image, eigen2cv(heline1.curvePoints), Point2f(100,100), Scalar(100,0,0),1);
+
+    draw_lines(image, eigen2cv(curvepoints), Point2f(100, 100), Scalar(0, 100, 0), 1);
     /*QuarterCell cell1(allPoints_, connections_);
     cell1.createCell();
     cell1.drawCell();*/

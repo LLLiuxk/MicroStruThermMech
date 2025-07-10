@@ -1127,6 +1127,7 @@ std::vector<Eigen::Vector2d> BSampleFunction::ThreeOrderBSplineInterpolatePt(std
     int InsertNumSum = 0;
     for (int i = 0; i < Num - 1; i++)
         InsertNumSum += InsertNum;
+    cout <<"InsertNumSum:"<< InsertNumSum << endl;
 
     std::vector<Eigen::Vector2d> temp(Num + 2);
     for (int i = 0; i < Num; i++)
@@ -1136,6 +1137,8 @@ std::vector<Eigen::Vector2d> BSampleFunction::ThreeOrderBSplineInterpolatePt(std
     temp[Num + 1] = Eigen::Vector2d(2 * temp[Num].x() - temp[Num - 1].x(),
         2 * temp[Num].y() - temp[Num - 1].y());
 
+    for (auto p : temp)
+        cout << p << endl;
 
     Eigen::Vector2d NodePt1, NodePt2, NodePt3, NodePt4;
     double t;
@@ -1166,8 +1169,6 @@ std::vector<Eigen::Vector2d> BSampleFunction::ThreeOrderBSplineInterpolatePt(std
     }
 
     return newpt;
-
-    Num = Num + InsertNumSum;
 }
 
 HermiteCurve::HermiteCurve(const std::vector<Eigen::Vector2d>& control_points, const std::vector<Eigen::Vector2d>& tangents, double segnum)
