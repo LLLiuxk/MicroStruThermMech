@@ -14,6 +14,7 @@ enum ConnectionType {
     MODE_LINEAR,
     MODE_BSPLINE,
     MODE_HERMITE,
+    MODE_BEZIER,
     MODE_RANDOM,
     // ... 其他模式
 };
@@ -103,7 +104,7 @@ namespace msGen {
 
         QuarterCell() {};
         
-        QuarterCell(std::vector<PointTang> allPoints_, std::vector<Connection> connections_) :AllPoints(std::move(allPoints_)), connections(std::move(connections_)) {};
+        QuarterCell(std::vector<PointTang> allPoints_, std::vector<Connection> connections_) :AllPoints(allPoints_), connections(connections_) {};
         
         QuarterCell(std::vector<std::vector<PointTang>> edgePoints_, std::vector<Connection> connections_);
         QuarterCell(std::vector<std::vector<double>> edgePointsRatios_, std::vector<std::vector<Eigen::Vector2d>> Tangents, std::vector<Connection> connections_);

@@ -18,30 +18,27 @@ int main()
     cv::Mat image(800, 800, CV_8UC3, cv::Scalar(255, 255, 255));
 
     std::vector<PointTang> allPoints_ = {
-    PointTang(Vector2d(0,100), Vector2d(-100,100)),
-    PointTang(Vector2d(100,200), Vector2d(100,250)),
-    PointTang(Vector2d(200,100), Vector2d(250,100)),
-    PointTang(Vector2d(100,0), Vector2d(100,-50))
+    PointTang(Vector2d(0,100), Vector2d(100,0)),
+    PointTang(Vector2d(100,200), Vector2d(0,100)),
+    PointTang(Vector2d(100,200), Vector2d(0,-100)),
+    PointTang(Vector2d(200,100), Vector2d(100,0))
     };
     std::vector<Connection> connections_ = {
     Connection(0,1,1,MODE_HERMITE,20),
-    Connection(1,2,2,MODE_LINEAR,20),
-    Connection(2,3,3,MODE_LINEAR,20),
-    Connection(3,0,0,MODE_LINEAR,20)
+    Connection(2,3,2,MODE_BEZIER,20)
     };
 
     HermiteCurve heline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
     vector<Vector2d> ctpoints = { Vector2d(0, 100), Vector2d(100, 100), Vector2d(100, 200) };
-    BSampleFunction bline1;
-    vector<Vector2d> curvepoints = bline1.ThreeOrderBSplineInterpolatePt(ctpoints, 10);
-    for (auto p : curvepoints)
-        cout << p << endl;
+    BezierCurve bline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
+    //for (auto p : curvepoints)
+    //    cout << p << endl;
 
     /*for(auto p: heline1.curvePoints)
         cout << p << endl;*/
     draw_lines(image, eigen2cv(heline1.curvePoints), Point2f(100,100), Scalar(100,0,0),1);
 
-    draw_lines(image, eigen2cv(curvepoints), Point2f(100, 100), Scalar(0, 100, 0), 1);
+    draw_lines(image, eigen2cv(bline1.curvePoints), Point2f(100, 100), Scalar(0, 100, 0), 1);
     /*QuarterCell cell1(allPoints_, connections_);
     cell1.createCell();
     cell1.drawCell();*/

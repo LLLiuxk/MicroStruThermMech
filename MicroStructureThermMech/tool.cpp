@@ -1102,75 +1102,80 @@ void showSparseMatrix(SparseMatrix<double> X)
 
 
 //---------------------------------------math tools-------------------------------------------------
-double BSampleFunction::F03(double t)
+//-------------------------------------------cubicBSpline---------------------------------------------
+BSplineCurve::BSplineCurve(std::vector<Vector2d> ctrlPoints, int InsertNum = 20, int degree = 4, int knot_type) :controlPoints(ctrlPoints) // //三次样条，阶数 = 4 
 {
-    return 1.0 / 6 * (-t * t * t + 3 * t * t - 3 * t + 1);
-}
-double BSampleFunction::F13(double t)
-{
-    return 1.0 / 6 * (3 * t * t * t - 6 * t * t + 4);
-}
-double BSampleFunction::F23(double t)
-{
-    return 1.0 / 6 * (-3 * t * t * t + 3 * t * t + 3 * t + 1);
-}
-double BSampleFunction::F33(double t)
-{
-    return 1.0 / 6 * t * t * t;
+    int c_num = controlPoints.size();
+    Knots = calculateKnots(c_num, degree, knot_type);
+    curvePoints = getPoints(InsertNum, degree);
 }
 
-std::vector<Eigen::Vector2d> BSampleFunction::ThreeOrderBSplineInterpolatePt(std::vector<Eigen::Vector2d>& pt, int InsertNum)
+Eigen::Vector2d BSplineCurve::getPoint(double t, int degree)
 {
-    if (pt.size() == 0 || InsertNum <= 0)
-        return std::vector<Eigen::Vector2d>();
-    int Num = pt.size();
-    int InsertNumSum = 0;
-    for (int i = 0; i < Num - 1; i++)
-        InsertNumSum += InsertNum;
-    cout <<"InsertNumSum:"<< InsertNumSum << endl;
+    Vector2d result(0, 0);
+    int n = controlPoints.size();
 
-    std::vector<Eigen::Vector2d> temp(Num + 2);
-    for (int i = 0; i < Num; i++)
-        temp[i + 1] = pt[i];
+    for (int i = 0; i < n; ++i) {
+        double basis = CoxDeBoor(i, degree, t, Knots);
+        result.x() += basis * controlPoints[i].x();
+        result.y() += basis * controlPoints[i].y();
+    }
+    return result;
+}
 
-    temp[0] = Eigen::Vector2d(2 * temp[1].x() - temp[2].x(), 2 * temp[1].y() - temp[2].y());
-    temp[Num + 1] = Eigen::Vector2d(2 * temp[Num].x() - temp[Num - 1].x(),
-        2 * temp[Num].y() - temp[Num - 1].y());
+std::vector<Eigen::Vector2d> BSplineCurve::getPoints(int segnum, int degree)
+{
+    std::vector<Eigen::Vector2d> curveps;
+    double t_start = Knots[degree - 1];
+    double t_end = Knots[Knots.size() - degree];
+    double t_step = (t_start - t_end) / segnum;
+    for (double t = t_start; t <= t_end; t += t_step) {
+        Vector2d pt = getPoint(t, degree);
+        curveps.push_back(pt);
+        //std::cout << std::fixed << std::setprecision(3) << "(" << pt.x << ", " << pt.y << ")\n";
+    }
+    return curveps;
+}
 
-    for (auto p : temp)
-        cout << p << endl;
-
-    Eigen::Vector2d NodePt1, NodePt2, NodePt3, NodePt4;
-    double t;
-    std::vector<Eigen::Vector2d> newpt(Num + InsertNumSum);
-
-    int totalnum = 0;
-    for (int i = 0; i < Num - 1; i++)
-    {
-        NodePt1 = temp[i];
-        NodePt2 = temp[i + 1];
-        NodePt3 = temp[i + 2];
-        NodePt4 = temp[i + 3];
-        double dt = 1.0 / (InsertNum + 1);
-
-        for (int j = 0; j < InsertNum + 1; j++) {
-            t = dt * j;
-            newpt[totalnum] = F03(t) * NodePt1 + F13(t) * NodePt2 + F23(t) * NodePt3
-                + F33(t) * NodePt4;
-            totalnum++;
-        }
-
-        if (i == Num - 2) {
-            t = 1;
-            newpt[totalnum] = F03(t) * NodePt1 + F13(t) * NodePt2 + F23(t) * NodePt3
-                + F33(t) * NodePt4;
-            totalnum++;
-        }
+// 递归计算 B 样条基函数 N_{i,k}(t)
+double BSplineCurve::CoxDeBoor(int i, int k, double t, const std::vector<double>& knots) {
+    if (k == 1) {
+        return (t >= knots[i] && t < knots[i + 1]) ? 1.0 : 0.0;
     }
 
-    return newpt;
+    double denom1 = knots[i + k - 1] - knots[i];
+    double denom2 = knots[i + k] - knots[i + 1];
+
+    double term1 = (denom1 == 0) ? 0 : (t - knots[i]) / denom1 * CoxDeBoor(i, k - 1, t, knots);
+    double term2 = (denom2 == 0) ? 0 : (knots[i + k] - t) / denom2 * CoxDeBoor(i + 1, k - 1, t, knots);
+
+    return term1 + term2;
 }
 
+std::vector<double> BSplineCurve::calculateKnots(int n_control_points, int degree, int knot_type = 0)  // knot_type = 0:均匀节点向量;  knot_type =1:开区间均匀节点向量
+{
+    int n_knots = n_control_points + degree;
+    std::vector<double> knots(n_knots);
+    if (knot_type == 0)
+    {
+        for (int i = 0; i < n_knots; ++i) {
+            knots[i] = i;
+        }
+    }
+    else
+    {
+        int n_internal = n_knots - 2 * degree;
+        for (int i = 0; i < degree; ++i)             // 前 k 个节点重复
+            knots[i] = 0;
+        for (int i = 0; i < n_internal; ++i)      // 中间均匀
+            knots[degree + i] = i + 1;
+        for (int i = degree + n_internal; i < n_knots; ++i)              // 后 k 个节点重复
+            knots[i] = n_internal + 1;
+    }
+    return knots;
+}
+
+//---------------------------------------------------------------hermite curve------------------------------------------------------------------------
 HermiteCurve::HermiteCurve(const std::vector<Eigen::Vector2d>& control_points, const std::vector<Eigen::Vector2d>& tangents, double segnum)
     : ctrP(control_points)
     , ctrT(tangents)
@@ -1200,7 +1205,6 @@ HermiteCurve::HermiteCurve(Eigen::Vector2d p0, Eigen::Vector2d p1, double angle1
     ctrT.push_back(t0);
     ctrT.push_back(t1); 
     curvePoints = getPoints(segnum);
-
 }
 
 Eigen::Vector2d HermiteCurve::getPoint(double t)
@@ -1282,6 +1286,48 @@ double HermiteCurve::distance(const Eigen::Vector2d& point) //点到曲线的距
     }
     return dist;
 }
+
+//--------------------------------------------------bezier curve-----------------------------------------------------
+BezierCurve::BezierCurve(std::vector<Eigen::Vector2d> ctrP_, std::vector<Eigen::Vector2d> ctrT_, int segnum) :ctrP(ctrP_), ctrT(ctrT_)
+{
+    // 转换为 Bézier 控制点
+    curvePoints = getPoints(segnum);
+}
+
+BezierCurve::BezierCurve(Vector2d p0, Vector2d p1, Vector2d t0, Vector2d t1, int segnum)
+{
+    ctrP = std::vector<Eigen::Vector2d>{ p0, p1 };
+    ctrT = std::vector<Eigen::Vector2d>{ t0, t1 };
+    curvePoints = getPoints(segnum);
+}
+
+Eigen::Vector2d BezierCurve::getPoint(double t)
+{
+    Vector2d p0 = ctrP[0];
+    Vector2d p1 = ctrP[0] + ctrT[0] / 3.0;  // q1 是起点切线向量
+    Vector2d p2 = ctrP[1] - ctrT[1] / 3.0;  // q3 是终点切线向量
+    Vector2d p3 = ctrP[1];
+
+    double u = 1 - t;
+    double f0 = u * u * u;
+    double f1 = 3 * u * u * t;
+    double f2 = 3 * u * t * t;
+    double f3 = t * t * t;
+
+    return f0 * p0 + f1 * p1 + f2 * p2 + f3 * p3;
+}
+    
+std::vector<Eigen::Vector2d> BezierCurve::getPoints(int segnum)
+{
+    std::vector<Eigen::Vector2d> curveps;
+    for (int i = 0; i <= segnum; ++i) {
+        double t = double(i) / segnum;
+        Vector2d pt = getPoint(t);
+        curveps.push_back(pt);
+    }
+    return curveps;
+}
+
 
 // 归一化向量（单位向量）
 Vector2d normVector(const Vector2d& v) {

@@ -52,17 +52,22 @@ MatrixXi image2matrix(string filename);
 void showSparseMatrix(SparseMatrix<double> X);
 
 //------------------------------math tools-------------------------------------------
-class BSampleFunction
+//-----------------------------CubicBSpline------------------------------------------
+class BSplineCurve
 {
 public:
-    BSampleFunction() {};
-    std::vector<Eigen::Vector2d> ThreeOrderBSplineInterpolatePt(std::vector<Eigen::Vector2d>& pt, int InsertNum);
-
-private:
-    double F03(double t);
-    double F13(double t);
-    double F23(double t);
-    double F33(double t);
+    BSplineCurve() {};
+    BSplineCurve(std::vector<Vector2d> ctrlPoints, int InsertNum = 20, int degree = 4, int knot_type);
+    Eigen::Vector2d getPoint(double t, int degree);
+    std::vector<Eigen::Vector2d> getPoints(int segnum, int degree);
+    // 递归计算 B 样条基函数 N_{i,k}(t)
+    std::vector<double> calculateKnots(int n_control_points, int degree, int knot_type = 0);  // knot_type = 0:均匀节点向量;  knot_type =1:开区间均匀节点向量
+    double CoxDeBoor(int i, int k, double t, const std::vector<double>& knots);
+        
+public:
+    std::vector<Eigen::Vector2d> controlPoints; // control points
+    std::vector<double> Knots;
+    std::vector<Eigen::Vector2d> curvePoints; // curvePoints
 };
 
 class HermiteCurve
@@ -88,6 +93,23 @@ public:
      std::vector<Eigen::Vector2d> ctrP; // control points
      std::vector<Eigen::Vector2d> ctrT; // tangents
      std::vector<Eigen::Vector2d> curvePoints; // curvePoints
+
+};
+
+class BezierCurve
+{
+public:
+    BezierCurve() {};
+    BezierCurve(std::vector<Eigen::Vector2d> ctrP_, std::vector<Eigen::Vector2d> ctrT_, int segnum);
+    BezierCurve(Vector2d p0, Vector2d p1, Vector2d t0, Vector2d t1, int segnum);
+
+    Eigen::Vector2d getPoint(double t);
+    std::vector<Eigen::Vector2d> getPoints(int segnum);
+   
+public:
+    std::vector<Eigen::Vector2d> ctrP; // control points
+    std::vector<Eigen::Vector2d> ctrT; // tangents
+    std::vector<Eigen::Vector2d> curvePoints; // curvePoints
 
 };
 

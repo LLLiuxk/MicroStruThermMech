@@ -7,7 +7,7 @@
 
 namespace msGen {
 
-    QuarterCell::QuarterCell(std::vector<std::vector<PointTang>> edgePoints_, std::vector<Connection> connections_) :edgePoints(std::move(edgePoints_)), connections(std::move(connections_))
+    QuarterCell::QuarterCell(std::vector<std::vector<PointTang>> edgePoints_, std::vector<Connection> connections_) :edgePoints(edgePoints_), connections(connections_)
     {
         for (int i = 0; i < 4; i++)
         {
@@ -22,7 +22,7 @@ namespace msGen {
         }
     }
 
-    QuarterCell::QuarterCell(std::vector<std::vector<double>> edgePointsRatios_, std::vector<std::vector<Eigen::Vector2d>> Tangents, std::vector<Connection> connections_) :connections(std::move(connections_))
+    QuarterCell::QuarterCell(std::vector<std::vector<double>> edgePointsRatios_, std::vector<std::vector<Eigen::Vector2d>> Tangents, std::vector<Connection> connections_) :connections(connections_)
     {
         for (int i = 0; i < 4; i++)
         {
@@ -84,6 +84,11 @@ namespace msGen {
                 double segnum = 20;
                 cout << endp1.point << endp2.point << endp1.tangent << endp2.tangent << endl;
                 linePoints = HermiteCurve(endp1.point, endp2.point, endp1.tangent, endp2.tangent, segnum).curvePoints;
+            }
+            case MODE_BEZIER: {
+                double segnum = 20;
+                cout << endp1.point << endp2.point << endp1.tangent << endp2.tangent << endl;
+                linePoints = BezierCurve(endp1.point, endp2.point, endp1.tangent, endp2.tangent, segnum).curvePoints;
             }
             default:
                 // 返回空路径或原始控制点
