@@ -7,7 +7,10 @@
 #include <Eigen/Dense>
 #include <random>
 #include "tool.h"
+#include "globals.h"
 using namespace std;
+
+
 
 enum ConnectionType {
     MODE_NONE = 0,
@@ -25,7 +28,7 @@ namespace msGen {
 	struct PointTang
 	{
 		Eigen::Vector2d point;
-		Eigen::Vector2d tangent;
+		Eigen::Vector2d tangent; 
 		double ratio;
 
 		PointTang() {}
@@ -36,39 +39,7 @@ namespace msGen {
 			, ratio(r)
 		{
 			tangent *= ratio;
-		}
-		
-		void setTangRatio(double r)
-		{
-			ratio = r;
-			tangent *= ratio;
-		}
-
-		void setDegree(double tangle, int type = 0) //type =  0 :degree   type =1: radian
-		{
-			if (type == 0)
-			{
-				//if (tangle < 0 && tangle >360)
-					//std::cout << "Input type error: It should be a DEGREE!" << std::endl;
-				double tranS = 1.0f / 180.0f * std::acos(-1);
-				tangent = Eigen::Vector2d(std::cosf(tangle * tranS), std::sinf(tangle * tranS)) * ratio;
-			}
-			else
-			{
-				//if (tangle < 0 && tangle >2 * std::cos(-1))
-					//std::cout << "Input type error: It should be a RADIAN!" << std::endl;
-				tangent = Eigen::Vector2d(std::cosf(tangle), std::sinf(tangle)) * ratio;
-			}
-		}
-		double getDegree(int type = 0) //type =  0 :degree   type =1: radian
-		{
-			double angle = std::atan2f(tangent.y(), tangent.x());
-			if (angle < 0)
-				angle += std::acos(-1) * 2;
-			if(type == 0)
-				return angle * 180.0f / std::acos(-1);
-			else return angle;
-		}
+		}		
 	};
 
 
@@ -91,7 +62,7 @@ namespace msGen {
         enum Edge { LEFT =0, TOP, RIGHT, BOTTOM  };
     private:
         std::vector<std::vector<double>> edgePointsRatios; // 每条边上的点的位置比例
-        std::vector<Eigen::Vector2d> fout_corners = { {0.0,0.0}, {0.0, 200.0}, {200.0,200.0}, {200.0, 0.0} }; // 固定初始化值
+        std::vector<Eigen::Vector2d> four_corners = { {0.0,0.0}, {0.0, unitLength}, {unitLength,unitLength}, {unitLength, 0.0} }; // 固定初始化值
         std::vector<int> edgePointsNums;
         std::vector<std::vector<PointTang>> edgePoints; // 每条边上的点，分别是左，上，右，下
         std::vector<PointTang > AllPoints; // 边界上的所有点
@@ -107,7 +78,8 @@ namespace msGen {
         QuarterCell(std::vector<PointTang> allPoints_, std::vector<Connection> connections_) :AllPoints(allPoints_), connections(connections_) {};
         
         QuarterCell(std::vector<std::vector<PointTang>> edgePoints_, std::vector<Connection> connections_);
-        QuarterCell(std::vector<std::vector<double>> edgePointsRatios_, std::vector<std::vector<Eigen::Vector2d>> Tangents, std::vector<Connection> connections_);
+        //QuarterCell(std::vector<std::vector<double>> edgePointsRatios_, std::vector<std::vector<Eigen::Vector2d>> Tangents, std::vector<Connection> connections_);
+        
 
         // 获取某条边的点
         const std::vector<PointTang>& getEdgePoints(Edge edge) const {
@@ -133,6 +105,8 @@ namespace msGen {
         void createCell();
 
         void drawCell();
+
+        void saveCell();
     };
 
 } // namespace msGen

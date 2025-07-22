@@ -4,11 +4,16 @@
 
 
 #include "tool.h"
+#include "globals.h"
 #include "microStruGenerate.h"
 #include "propertyCalculate.h"
 #include "Visualization.h"
 
 using namespace msGen;
+
+cv::Point2f ZeroShift = Point2f(0.0, 0.0);
+
+int unitLength = 128;
 
 int main()
 {
@@ -17,28 +22,40 @@ int main()
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
     cv::Mat image(800, 800, CV_8UC3, cv::Scalar(255, 255, 255));
 
+    double edgepoint = 0.5 * unitLength;
+    double edgetangent = 0.5*unitLength;
     std::vector<PointTang> allPoints_ = {
-    PointTang(Vector2d(0,100), Vector2d(100,0)),
-    PointTang(Vector2d(100,200), Vector2d(0,100)),
-    PointTang(Vector2d(100,200), Vector2d(0,-100)),
-    PointTang(Vector2d(200,100), Vector2d(100,0))
+    PointTang(Vector2d(0,edgepoint), Vector2d(edgetangent,0)),
+    PointTang(Vector2d(edgepoint,unitLength), Vector2d(0,edgetangent)),
+    PointTang(Vector2d(edgepoint,unitLength), Vector2d(0,-edgetangent)),
+    PointTang(Vector2d(unitLength,edgepoint), Vector2d(edgetangent,0))
     };
     std::vector<Connection> connections_ = {
     Connection(0,1,1,MODE_HERMITE,20),
     Connection(2,3,2,MODE_BEZIER,20)
     };
 
-    HermiteCurve heline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
-    vector<Vector2d> ctpoints = { Vector2d(0, 100), Vector2d(100, 100), Vector2d(100, 200) };
-    BezierCurve bline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
-    //for (auto p : curvepoints)
+    //HermiteCurve heline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
+    //vector<Vector2d> ctpoints = { Vector2d(0, 100), Vector2d(100, 100), Vector2d(100, 200) };
+    //BezierCurve bline1(Vector2d(0, 100), Vector2d(100, 200), Vector2d(100, 0), Vector2d(0, 100), 20);
+    ////for (auto p : curvepoints)
+    ////    cout << p << endl;
+
+    //for(auto p: heline1.curvePoints)
     //    cout << p << endl;
+    //draw_lines(image, eigen2cv(heline1.curvePoints), Point2f(100,100), Scalar(100,0,0),1);
 
-    /*for(auto p: heline1.curvePoints)
-        cout << p << endl;*/
-    draw_lines(image, eigen2cv(heline1.curvePoints), Point2f(100,100), Scalar(100,0,0),1);
+    //cout << "---------------------bline--------------------" << endl;
+    //for (auto p : bline1.curvePoints)
+    //    cout << p << endl;
+    //draw_lines(image, eigen2cv(bline1.curvePoints), Point2f(100, 100), Scalar(0, 100, 0), 1);
 
-    draw_lines(image, eigen2cv(bline1.curvePoints), Point2f(100, 100), Scalar(0, 100, 0), 1);
+
+    QuarterCell cell1(allPoints_, connections_);
+    cell1.createCell();
+    cell1.drawCell();
+
+
     /*QuarterCell cell1(allPoints_, connections_);
     cell1.createCell();
     cell1.drawCell();*/

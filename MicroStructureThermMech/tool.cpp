@@ -1103,7 +1103,7 @@ void showSparseMatrix(SparseMatrix<double> X)
 
 //---------------------------------------math tools-------------------------------------------------
 //-------------------------------------------cubicBSpline---------------------------------------------
-BSplineCurve::BSplineCurve(std::vector<Vector2d> ctrlPoints, int InsertNum = 20, int degree = 4, int knot_type) :controlPoints(ctrlPoints) // //三次样条，阶数 = 4 
+BSplineCurve::BSplineCurve(std::vector<Vector2d> ctrlPoints, int knot_type, int InsertNum, int degree) :controlPoints(ctrlPoints) // //三次样条，阶数 = 4 
 {
     int c_num = controlPoints.size();
     Knots = calculateKnots(c_num, degree, knot_type);
@@ -1152,7 +1152,7 @@ double BSplineCurve::CoxDeBoor(int i, int k, double t, const std::vector<double>
     return term1 + term2;
 }
 
-std::vector<double> BSplineCurve::calculateKnots(int n_control_points, int degree, int knot_type = 0)  // knot_type = 0:均匀节点向量;  knot_type =1:开区间均匀节点向量
+std::vector<double> BSplineCurve::calculateKnots(int n_control_points, int degree, int knot_type)  // knot_type = 0:均匀节点向量;  knot_type =1:开区间均匀节点向量
 {
     int n_knots = n_control_points + degree;
     std::vector<double> knots(n_knots);
@@ -1506,6 +1506,48 @@ vector<Vector2d> cv2eigen(vector<Point2f> points)
     }
     return points_;
 }
+
+
+//---------------------file process-------------------------------
+//void fileout(string filepath, vector<Point2f> contour_)
+//{
+//    ofstream out(filepath);
+//    if (out.is_open())
+//    {
+//        out << contour_.size() << endl;//contours[0].size()
+//        for (int j = 0; j < contour_.size(); j++)
+//            out << contour_[j].x << "," << contour_[j].y << endl;
+//        //out << contour_[0].x << "," << contour_[0].y << endl;  //首尾连起来
+//    }
+//    cout << "contour has : " << contour_.size() << " points" << endl;
+//    out.close();
+//}
+
+//将tile保存为svg格式
+//void save_svg(string svg_path, vector<Point2f> contour, Scalar color, Point2f shift, double zoom_scale)
+//{
+//    //write head
+//    if (_access(svg_path.c_str(), 0) == -1) return;
+//    ofstream outfile(svg_path);
+//    outfile << "<?xml version=\"1.0\" standalone=\"no\"?>" << endl
+//        << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"" << endl
+//        << "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" << endl << endl;
+//    outfile << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">" << endl;
+//
+//    //write body
+//    outfile << " <polygon points=\" ";
+//    //cout << " polygon points: " << contour[0] << endl;
+//    for (int i = 0; i < contour.size(); i++)
+//    {
+//        Point2f one = zoom_scale * contour[i] + shift;
+//        outfile << one.x << "," << one.y << " ";
+//    }
+//    outfile << "\"" << endl << "style=\"fill:rgb(" << to_string(int(color[2])) << "," << to_string(int(color[1])) << "," << to_string(int(color[0])) << ")\"/>" << endl;
+//    //write tail
+//    outfile << "</svg>" << endl;
+//    outfile.close();
+//}
+
 
 
 

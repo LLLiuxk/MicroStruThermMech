@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <unsupported/Eigen/src/KroneckerProduct/KroneckerTensorProduct.h>
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include <unordered_map>
@@ -17,6 +18,7 @@ using namespace cv;
 #ifndef M_PI
 #define M_PI 3.141592653589793238462643383279502884L /* pi */
 #endif                                               // ! M_PI
+
 
 // calculate homo property
 MatrixXd homogenize(int lx, int ly, 
@@ -57,7 +59,7 @@ class BSplineCurve
 {
 public:
     BSplineCurve() {};
-    BSplineCurve(std::vector<Vector2d> ctrlPoints, int InsertNum = 20, int degree = 4, int knot_type);
+    BSplineCurve(std::vector<Vector2d> ctrlPoints, int knot_type, int InsertNum = 20, int degree = 4);
     Eigen::Vector2d getPoint(double t, int degree);
     std::vector<Eigen::Vector2d> getPoints(int segnum, int degree);
     // 递归计算 B 样条基函数 N_{i,k}(t)
